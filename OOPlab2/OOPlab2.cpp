@@ -34,7 +34,7 @@ public:
 		x += dx;
 		y += dy;
 	}
-	void reset();	//	объявление метода обнуления точки
+	virtual void reset();	//	объявление метода обнуления точки
 };
 
 void Point::reset() //	описание метода обнуления вне класса
@@ -68,16 +68,16 @@ public:
 	{
 		printf("~Point3D(%d, %d, %d)\n", x, y, z);
 	}
-	void move3D(int dx, int dy, int dz)	//	метод сдвига точки в пространстве
+	void move(int dx, int dy, int dz)	//	метод сдвига точки в пространстве
 	{
 		printf("move3D(%d, %d, %d)\n", dx, dy, dz);
-		move(dx, dy);
+		Point::move(dx, dy);
 		z += dz;
 	}
-	void reset3D() //	метод обнуления точки в пространстве
+	void reset() //	метод обнуления точки в пространстве
 	{
 		printf("reset3D(%d, %d, %d)\n", x, y, z);
-		reset();
+		Point::reset();
 		z = 0; 
 	}
 };
@@ -125,32 +125,35 @@ int main()
 	setlocale(LC_ALL, "rus");
 	{
 		printf("СОЗДАНИЕ СТАТИЧЕСКИХ ОБЪЕКТОВ:\n");
-		Point p0;
-		Point p1(5, 6);
-		Point p2(p1);
-		p2.move(2, 1);
-		Point p3(22, 22);
-		p3.reset();
-	}
+		Point p0;			//	p0(0,0)
+		Point p1(5, 6);		//	p1(5,6)
+		Point p2(p1);		//	p2(5,6)
+		p2.move(2, 1);		//	p2(7,7)
+		Point p3(22, 22);	//	p3(22,22)
+		p3.reset();			//	p3(0,0)
+	}	//	д-ры вызовутся в порядке, обратном вызову конструкторов: p3, p2, p1, p0
 	{
 		printf("\nСОЗДАНИЕ ДИНАМИЧЕСКИХ ОБЪЕКТОВ:\n");
 		Point *p0 = new Point();
 		Point *p1 = new Point(7, 8);
 		Point *p2 = new Point(*p1);
 		p2->move(2, 1);
-		Point *p3 = new Point3D(7, 7, 7);
+		Point *p3 = new Point3D(7, 7, 7);	//	помещение объекта в переменную класса родителя
+		p3->move(5, 4);	//	нельзя вызвать метод Point3D::move(), потому что он не виртуальный
+		p3->reset();	//	а в этой строке вызовется Point3D::reset(), поскольку он виртуальный
+		//	в результате обнулятся все 3 координаты, что будет видно в при вызове д-ра
 		delete p0;
 		delete p1;
 		delete p2;
 		delete p3;
-	}
+	}	//	д-ры вызовутся в порядке удаления объектов: p0, p1, p2, p3
 	{
 		printf("\nСОЗДАНИЕ ТОЧЕК В ПРОСТРАНСТЕ:\n");
 		Point3D p0;
 		Point3D p1(1, 2, 3);
 		Point3D p2(p1);
-		p1.reset3D();
-		p0.move3D(2, 1, 0);
+		p1.reset();
+		p0.move(2, 1, 0);
 	}
 	{
 		printf("\nСОЗДАНИЕ ОТРЕЗКА НА ПЛОСКОСТИ:\n");
